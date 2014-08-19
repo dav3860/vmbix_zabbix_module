@@ -26,6 +26,9 @@ cd <source_zabbix>/src/modules/
 
 and you should create a new directory with this git repo content. After that, inside of the new module directory, a `make` is enough. This will create the zbx_vmbix.so file.
 
+**binary**:
+A compiled module is provided too (tested on Centos 6 x64).
+
 Configure
 ---------
 
