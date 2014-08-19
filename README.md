@@ -26,8 +26,6 @@ cd <source_zabbix>/src/modules/
 
 and you should create a new directory with this git repo content. After that, inside of the new module directory, a `make` is enough. This will create the zbx_vmbix.so file.
 
-**Other**: There is a compiled version too. Copy it wherever you want (for example in /usr/lib/zabbix/modules).
-
 Configure
 ---------
 
