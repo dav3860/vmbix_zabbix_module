@@ -55,4 +55,4 @@ vmbix[vm.guest.os,VM01]                  [s|Red Hat Enterprise Linux 6 (64 b
 Zabbix 2.2.x template
 ---------------------
 
-Some templates will be provided soon.
+A sample template to monitor virtual machines is provided.
