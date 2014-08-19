@@ -1,0 +1,22 @@
+### Option: ModuleTimeout
+#       Specifies how long we wait for module process with Deltacloud.
+#
+# Mandatory: no
+# Range: 1-600
+# Default:
+# ModuleTimeout=15
+
+### Option: VmBixHost
+#       The hostname or IP address where the VmBix daemon is located
+#
+# Mandatory: no
+# Default:
+# VmBixHost = 127.0.0.1
+
+### Option: VmBixPort
+#       The VmBix daemon port
+#
+# Mandatory: no
+# Range: 1-65535
+# Default:
+# VmBixPort = 12050
