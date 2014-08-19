@@ -1,5 +1,5 @@
 ### Option: ModuleTimeout
-#       Specifies how long we wait for module process with Deltacloud.
+#       Specifies how long we wait for module timeout
 #
 # Mandatory: no
 # Range: 1-600
