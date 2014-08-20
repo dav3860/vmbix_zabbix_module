@@ -158,9 +158,6 @@ static int	get_value(const char *source_ip, const char *host, unsigned short por
 		zbx_tcp_close(&s);
 	}
 
-	if (FAIL == ret)
-		zbx_error("Get value error: %s", zbx_tcp_strerror());
-
 	return ret;
 }
 
@@ -223,10 +220,10 @@ ZBX_METRIC    *zbx_module_item_list()
 int    zbx_module_init()
 {
     srand(time(NULL));
-    
+
     zbx_module_load_config();
     zbx_module_set_defaults();
-    
+
     return ZBX_MODULE_OK;
 }
  
@@ -294,15 +291,13 @@ char* concat(int count, ...)
 * Return value: list of values                                               *
 *                                                                            *
 ******************************************************************************/
- 
 int    zbx_module_vmbix(AGENT_REQUEST *request, AGENT_RESULT *result)
 {
-	int		ret = SUCCEED;
-  char *value = NULL, *host = NULL, *source_ip = NULL;
-  char *key;
-  
+  int  ret = SUCCEED;
+  char *value = NULL, *host = NULL, *source_ip = NULL, *key = NULL;
+
   zbx_module_item_timeout(CONFIG_MODULE_TIMEOUT);
-  
+
   if (request->nparam == 0 || request->nparam >= 6)
   {
        /* set optional error message */
@@ -311,48 +306,40 @@ int    zbx_module_vmbix(AGENT_REQUEST *request, AGENT_RESULT *result)
   }
 
   // Construct query
-  if (request->nparam == 1) {
+  if (request->nparam == 1)
     key = concat(1, get_rparam(request, 0));
-  }  
-  if (request->nparam == 2) {
+  if (request->nparam == 2)
     key = concat(4, get_rparam(request, 0), "[", get_rparam(request, 1), "]");
-  }
-  if (request->nparam == 3) {
+  if (request->nparam == 3)
     key = concat(6, get_rparam(request, 0), "[", get_rparam(request, 1), ",", get_rparam(request, 2), "]");
-  }
-  if (request->nparam == 4) {
+  if (request->nparam == 4)
     key = concat(8, get_rparam(request, 0), "[", get_rparam(request, 1), ",", get_rparam(request, 2), ",", get_rparam(request, 3), "]");
-  }
-  if (request->nparam == 5) {
+  if (request->nparam == 5)
     key = concat(10, get_rparam(request, 0), "[", get_rparam(request, 1), ",", get_rparam(request, 2), ",", get_rparam(request, 3), ",", get_rparam(request, 4), "]");
-  }    
-  
-	if (NULL == key)
-	{
-    return SYSINFO_RET_FAIL;
-    
-	}
 
-	if (SUCCEED == ret)
-	{
+  if (NULL == key)
+    return SYSINFO_RET_FAIL;
+
+  if (SUCCEED == ret)
+  {
 
 #if !defined(_WINDOWS)
-		signal(SIGINT,  get_signal_handler);
-		signal(SIGTERM, get_signal_handler);
-		signal(SIGQUIT, get_signal_handler);
-		signal(SIGALRM, get_signal_handler);
+  signal(SIGINT,  get_signal_handler);
+  signal(SIGTERM, get_signal_handler);
+  signal(SIGQUIT, get_signal_handler);
+  signal(SIGALRM, get_signal_handler);
 #endif
 
-		ret = get_value(source_ip, CONFIG_VMBIX_HOST, CONFIG_VMBIX_PORT, key, &value);
-    
-		if (SUCCEED == ret)
-			SET_STR_RESULT(result, strdup(value));
-    
+    ret = get_value(source_ip, CONFIG_VMBIX_HOST, CONFIG_VMBIX_PORT, key, &value);
+
+    if (SUCCEED == ret)
+      SET_STR_RESULT(result, strdup(value));
+
     zbx_free(value);
-	}  
-  
-	zbx_free(host);
-	zbx_free(key);
+  }
+
+  zbx_free(host);
+  zbx_free(key);
 
   return  SYSINFO_RET_OK;
 }
