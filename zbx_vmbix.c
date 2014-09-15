@@ -33,20 +33,20 @@
 #define CONFIG_FILE "/etc/zabbix/vmbix_module.conf"
 
 static int	item_timeout = 30;
-int CONFIG_MODULE_TIMEOUT	= 30;
-char *CONFIG_VMBIX_HOST = NULL;
+static int CONFIG_MODULE_TIMEOUT	= 30;
+static char *CONFIG_VMBIX_HOST = NULL;
 unsigned short CONFIG_VMBIX_PORT = 12050;
 
 int    zbx_module_vmbix(AGENT_REQUEST *request, AGENT_RESULT *result);
+int    zbx_module_vmbix_echo(AGENT_REQUEST *request, AGENT_RESULT *result);
 
 static ZBX_METRIC keys[] =
 /* KEY               FLAG           FUNCTION                TEST PARAMETERS */
 {
-    {"vmbix",   CF_HAVEPARAMS, zbx_module_vmbix,  "ping"},
+    {"vmbix",   CF_HAVEPARAMS, zbx_module_vmbix,  NULL},
+    {"vmbix.echo",   CF_HAVEPARAMS, zbx_module_vmbix_echo,  NULL},    
     {NULL}
 };
-
-#if !defined(_WINDOWS)
 
 /******************************************************************************
  *                                                                            *
@@ -71,9 +71,6 @@ static void	get_signal_handler(int sig)
 	exit(FAIL);
 }
 
-#endif /* not WINDOWS */
-
-
 /******************************************************************************
  *                                                                            *
  * Function: zbx_module_set_defaults                                          *
@@ -87,7 +84,7 @@ static void	zbx_module_set_defaults()
 {
 
 	if (NULL == CONFIG_VMBIX_HOST) 
-		CONFIG_VMBIX_HOST = zbx_strdup(CONFIG_VMBIX_HOST, "127.0.0.1");
+		CONFIG_VMBIX_HOST = "127.0.0.1";
 }
 
 /******************************************************************************
@@ -104,11 +101,14 @@ static void	zbx_module_set_defaults()
  ******************************************************************************/
 static void	zbx_module_load_config()
 {
+  zabbix_log(LOG_LEVEL_INFORMATION, "Loading VmBix module configuration file %s",
+	      CONFIG_FILE);
 	static struct cfg_line cfg[] =
 	{
-    {"ModuleTimeout",	&CONFIG_MODULE_TIMEOUT,	TYPE_INT,	PARM_OPT,	1,	600},
+    {"VmBixModuleTimeout",	&CONFIG_MODULE_TIMEOUT,	TYPE_INT,	PARM_OPT,	1,	600},
 		{"VmBixPort",	&CONFIG_VMBIX_PORT,	TYPE_INT,	PARM_OPT,	1,	65535},
 		{"VmBixHost",	&CONFIG_VMBIX_HOST,	TYPE_STRING,	PARM_OPT,	0,	0},
+    { NULL },
 	};
 
 	parse_cfg_file(CONFIG_FILE, cfg, ZBX_CFG_FILE_OPTIONAL, ZBX_CFG_STRICT);
@@ -223,6 +223,10 @@ int    zbx_module_init()
 
     zbx_module_load_config();
     zbx_module_set_defaults();
+    
+    zabbix_log(LOG_LEVEL_DEBUG, "VmBix Timeout: %d (s)", CONFIG_MODULE_TIMEOUT);
+    zabbix_log(LOG_LEVEL_DEBUG, "VmBix Host: %s", CONFIG_VMBIX_HOST);
+    zabbix_log(LOG_LEVEL_DEBUG, "VmBix Port: %d", CONFIG_VMBIX_PORT);
 
     return ZBX_MODULE_OK;
 }
@@ -273,12 +277,11 @@ char* concat(int count, ...)
     for(i=0 ; i<count ; i++)
     {
         char *s = va_arg(ap, char*);
-        zbx_strlcpy(merged+null_pos, s, 256);
-        //strcpy(merged+null_pos, s);
+        zbx_strlcpy(merged + null_pos, s, 256);
         null_pos += strlen(s);
     }
     va_end(ap);
-
+    
     return merged;
 }
 
@@ -318,21 +321,17 @@ int    zbx_module_vmbix(AGENT_REQUEST *request, AGENT_RESULT *result)
     key = concat(10, get_rparam(request, 0), "[", get_rparam(request, 1), ",", get_rparam(request, 2), ",", get_rparam(request, 3), ",", get_rparam(request, 4), "]");
 
   if (NULL == key)
+    SET_MSG_RESULT(result, strdup("Query is empty"));
     return SYSINFO_RET_FAIL;
 
   if (SUCCEED == ret)
   {
-
-#if !defined(_WINDOWS)
-  signal(SIGINT,  get_signal_handler);
-  signal(SIGTERM, get_signal_handler);
-  signal(SIGQUIT, get_signal_handler);
-  signal(SIGALRM, get_signal_handler);
-#endif
-
+    zabbix_log(LOG_LEVEL_DEBUG, "Querying VmBix endpoint at %s:%s",
+          CONFIG_VMBIX_HOST, CONFIG_VMBIX_PORT);  
     ret = get_value(source_ip, CONFIG_VMBIX_HOST, CONFIG_VMBIX_PORT, key, &value);
 
     if (SUCCEED == ret)
+      zabbix_log(LOG_LEVEL_DEBUG, "Received reply from VmBix: %s", value);
       SET_STR_RESULT(result, strdup(value));
 
     zbx_free(value);
@@ -340,6 +339,32 @@ int    zbx_module_vmbix(AGENT_REQUEST *request, AGENT_RESULT *result)
 
   zbx_free(host);
   zbx_free(key);
+  zbx_free(source_ip);
 
   return  SYSINFO_RET_OK;
+}
+
+/*****************************************************************************
+*                                                                            *
+* Function: zbx_module_vmbix_echo                                            *
+*                                                                            *
+* Purpose: echoes back the first parameter                                   *
+*                                                                            *
+* Return value: the value it was invoked with                                               *
+*                                                                            *
+******************************************************************************/
+int    zbx_module_vmbix_echo(AGENT_REQUEST *request, AGENT_RESULT *result)
+{
+  const char *param;
+
+  if (request->nparam != 1) {
+    SET_MSG_RESULT(result, strdup("Invalid number of key parameters"));
+    return (SYSINFO_RET_FAIL);
+  }
+
+  param = get_rparam(request, 0);
+
+  SET_STR_RESULT(result, strdup(param));
+
+  return (SYSINFO_RET_OK);
 }
