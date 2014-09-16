@@ -1,2 +1,4 @@
-zbx_vmbix: zbx_vmbix.c
-	gcc -shared -o zbx_vmbix.so zbx_vmbix.c -I../../../include -fPIC
+vmbix-2.4: vmbix-2.4.c
+	gcc -shared -o vmbix.so vmbix-2.4.c -I../../../include -fPIC
+vmbix-2.2: vmbix-2.2.c
+	gcc -shared -o vmbix.so vmbix-2.2.c -I../../../include -fPIC

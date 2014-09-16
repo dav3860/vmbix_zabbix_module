@@ -14,7 +14,7 @@ Install
 
 From **source**:
 
-You need to download the Zabbix source and:
+You need to download the Zabbix source (2.2 or 2.4) and:
 
 ```
 cd <source_zabbix>
@@ -23,10 +23,20 @@ cd <source_zabbix>
 cd <source_zabbix>/src/modules/ 
 ```
 
-and you should create a new directory with this git repo content. After that, inside of the new module directory, a `make` is enough. This will create the zbx_vmbix.so file. Put into into /usr/lib/zabbix/modules for example.
+and you should create a new directory with this git repo content. After that, inside of the new module directory, compile the module :
+*** For Zabbix 2.2 :
+```
+make vmbix-2.2
+```
+*** For Zabbix 2.4 :
+```
+make vmbix-2.4
+```
+
+This will create the vmbix.so file. Put it into /usr/lib/zabbix/modules for example.
 
 **binary**:
-A compiled module is provided too (tested on Centos 6 x64).
+A compiled module is provided too (for Zabbix 2.4, tested on Centos 6 x64).
 
 Configure
 ---------
@@ -39,7 +49,7 @@ Configure
 
 ```
 LoadModulePath=/usr/lib/zabbix/modules
-LoadModule=zbx_vmbix.so
+LoadModule=vmbix.so
 ```
 
 And restart the agent or server.
@@ -53,7 +63,7 @@ You can test it like this with a Zabbix agent for example :
 vmbix[vm.guest.os,VM01]                  [s|Red Hat Enterprise Linux 6 (64 bits)]
 ```
 
-Zabbix 2.2.x template
+Zabbix 2.x template
 ---------------------
 
 A sample template to monitor virtual machines is provided.
