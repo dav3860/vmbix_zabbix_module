@@ -14,17 +14,16 @@ Install
 
 From **source**:
 
-You need to download the Zabbix 2.2.x source and:
+You need to download the Zabbix source and:
 
 ```
 cd <source_zabbix>
 ./configure
-make
 
 cd <source_zabbix>/src/modules/ 
 ```
 
-and you should create a new directory with this git repo content. After that, inside of the new module directory, a `make` is enough. This will create the zbx_vmbix.so file.
+and you should create a new directory with this git repo content. After that, inside of the new module directory, a `make` is enough. This will create the zbx_vmbix.so file. Put into into /usr/lib/zabbix/modules for example.
 
 **binary**:
 A compiled module is provided too (tested on Centos 6 x64).
@@ -32,9 +31,11 @@ A compiled module is provided too (tested on Centos 6 x64).
 Configure
 ---------
 
-**For an agent module:** `cd /etc/zabbix/zabbix_agentd.conf`
+**For an agent :** `cd /etc/zabbix/zabbix_agentd.conf`
 
-**For a server module:** `cd /etc/zabbix/zabbix_server.conf`
+**For a server :** `cd /etc/zabbix/zabbix_server.conf`
+
+**For a proxy :** `cd /etc/zabbix/zabbix_proxy.conf`
 
 ```
 LoadModulePath=/usr/lib/zabbix/modules
