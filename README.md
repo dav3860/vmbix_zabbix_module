@@ -24,11 +24,13 @@ cd <source_zabbix>/src/modules/
 ```
 
 and you should create a new directory with this git repo content. After that, inside of the new module directory, compile the module :
-*** For Zabbix 2.2 :
+
+### For Zabbix 2.2 :
 ```
 make vmbix-2.2
 ```
-*** For Zabbix 2.4 :
+
+### For Zabbix 2.4 :
 ```
 make vmbix-2.4
 ```
