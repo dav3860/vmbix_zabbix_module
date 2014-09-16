@@ -71,7 +71,7 @@ You can test it like this with a Zabbix agent for example :
 vmbix[vm.guest.os,VM01]                  [s|Red Hat Enterprise Linux 6 (64 bits)]
 ```
 
-Zabbix 2.x template
+Zabbix 2.x templates
 ---------------------
 
-A sample template to monitor virtual machines is provided.
+Sample templates using this loadable module are provided in the [VmBix repository](https://github.com/dav3860/vmbix/tree/master/src/zabbix_templates).
