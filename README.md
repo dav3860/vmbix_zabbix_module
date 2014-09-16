@@ -14,7 +14,7 @@ Install
 
 From **source**:
 
-You need to download the Zabbix source (2.2 or 2.4) and:
+You need to download the Zabbix source (2.2 or 2.4) configure the environment :
 
 ```
 cd <source_zabbix>
@@ -23,7 +23,13 @@ cd <source_zabbix>
 cd <source_zabbix>/src/modules/ 
 ```
 
-and you should create a new directory with this git repo content. After that, inside of the new module directory, compile the module :
+And you should create a new directory with this git repo content :
+```
+git clone https://github.com/dav3860/vmbix_zabbix_module.git
+cd vmbix_zabbix_module
+```
+
+After that, compile the module :
 
 ### For Zabbix 2.2 :
 ```
@@ -35,7 +41,7 @@ make vmbix-2.2
 make vmbix-2.4
 ```
 
-This will create the vmbix.so file. Put it into /usr/lib/zabbix/modules for example.
+This will create the vmbix.so file. Put it into a /usr/lib/zabbix/modules directory for example.
 
 **binary**:
 A compiled module is provided too (for Zabbix 2.4, tested on Centos 6 x64).
