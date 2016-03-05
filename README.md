@@ -41,6 +41,11 @@ make vmbix-2.2
 make vmbix-2.4
 ```
 
+### For Zabbix 3.0 :
+```
+make vmbix-3.0
+```
+
 This will create the vmbix.so file. Put it into a /usr/lib/zabbix/modules directory for example.
 
 **binary**:
