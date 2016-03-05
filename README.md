@@ -48,9 +48,6 @@ make vmbix-3.0
 
 This will create the vmbix.so file. Put it into a /usr/lib/zabbix/modules directory for example.
 
-**binary**:
-A compiled module is provided too (for Zabbix 2.4, tested on Centos 6 x64).
-
 Configure
 ---------
 
