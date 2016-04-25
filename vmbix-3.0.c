@@ -28,26 +28,6 @@
 #include "zbxgetopt.h"
 #include "sysinc.h"
 #include "module.h"
-#include "../../libs/zbxcrypto/tls.h"
-
-/* TLS parameters */
-unsigned int    configured_tls_connect_mode = ZBX_TCP_SEC_UNENCRYPTED;
-unsigned int    configured_tls_accept_modes = ZBX_TCP_SEC_UNENCRYPTED;  /* not used in zabbix_get, just for linking */
-                                                                        /* with tls.c */
-char    *CONFIG_TLS_CONNECT             = NULL;
-char    *CONFIG_TLS_ACCEPT              = NULL; /* not used in zabbix_get, just for linking with tls.c */
-char    *CONFIG_TLS_CA_FILE             = NULL;
-char    *CONFIG_TLS_CRL_FILE            = NULL;
-char    *CONFIG_TLS_SERVER_CERT_ISSUER  = NULL;
-char    *CONFIG_TLS_SERVER_CERT_SUBJECT = NULL;
-char    *CONFIG_TLS_CERT_FILE           = NULL;
-char    *CONFIG_TLS_KEY_FILE            = NULL;
-char    *CONFIG_TLS_PSK_IDENTITY        = NULL;
-char    *CONFIG_TLS_PSK_FILE            = NULL;
-
-int     CONFIG_PASSIVE_FORKS            = 0;    /* not used in zabbix_get, just for linking with tls.c */
-int     CONFIG_ACTIVE_FORKS             = 0;    /* not used in zabbix_get, just for linking with tls.c */
-
 
 #define CONFIG_FILE "/etc/zabbix/vmbix_module.conf"
 
@@ -62,8 +42,8 @@ int    zbx_module_vmbix_ping(AGENT_REQUEST *request, AGENT_RESULT *result);
 static ZBX_METRIC keys[] =
 /* KEY               FLAG           FUNCTION                TEST PARAMETERS */
 {
-    {"vmbix",   CF_HAVEPARAMS, zbx_module_vmbix,  NULL},
-    {"vmbix.ping",   CF_HAVEPARAMS, zbx_module_vmbix_ping,  NULL},
+    {"vmbix",       CF_HAVEPARAMS, zbx_module_vmbix,  NULL},
+    {"vmbix.ping",  CF_HAVEPARAMS, zbx_module_vmbix_ping,  NULL},
     {NULL}
 };
 
@@ -120,14 +100,13 @@ static void	zbx_module_set_defaults()
  ******************************************************************************/
 static void	zbx_module_load_config()
 {
-  zabbix_log(LOG_LEVEL_INFORMATION, "Loading VmBix module configuration file %s",
-	      CONFIG_FILE);
+  zabbix_log(LOG_LEVEL_INFORMATION, "Loading VmBix module configuration file %s", CONFIG_FILE);
 	static struct cfg_line cfg[] =
 	{
-        {"VmBixModuleTimeout",	&CONFIG_MODULE_TIMEOUT,	TYPE_INT,	PARM_OPT,	1,	600},
-		{"VmBixPort",	        &CONFIG_VMBIX_PORT,	TYPE_INT,	PARM_OPT,	1,	65535},
-		{"VmBixHost",        	&CONFIG_VMBIX_HOST,	TYPE_STRING,	PARM_OPT,	0,	0},
-        { NULL },
+    {"VmBixModuleTimeout",  &CONFIG_MODULE_TIMEOUT,	TYPE_INT,	PARM_OPT,	1,	600},
+    {"VmBixPort",	          &CONFIG_VMBIX_PORT,	TYPE_INT,	PARM_OPT,	1,	65535},
+    {"VmBixHost",        	  &CONFIG_VMBIX_HOST,	TYPE_STRING,	PARM_OPT,	0,	0},
+    { NULL },
 	};
 
 	parse_cfg_file(CONFIG_FILE, cfg, ZBX_CFG_FILE_OPTIONAL, ZBX_CFG_STRICT);
@@ -146,58 +125,38 @@ static void	zbx_module_load_config()
  ******************************************************************************/
 static int      get_value(const char *source_ip, const char *host, unsigned short port, const char *key, char **value)
 {
-        zbx_socket_t    s;
-        int             ret;
-        char            *buf;
-        ssize_t         bytes_received = -1;
-        char            *tls_arg1, *tls_arg2, *request;
+    zbx_socket_t    s;
+    int             ret;
+    ssize_t         bytes_received = -1;
+    char            *request;
 
-        assert(value);
+    assert(value);
 
-        *value = NULL;
+    *value = NULL;
 
+    if (SUCCEED == (ret = zbx_tcp_connect(&s, source_ip, host, port, GET_SENDER_TIMEOUT,
+            ZBX_TCP_SEC_UNENCRYPTED, NULL, NULL)))
+    {
+        request = zbx_dsprintf(NULL, "%s\n", key);
 
-        if (ZBX_TCP_SEC_UNENCRYPTED == configured_tls_connect_mode)
+        if (SUCCEED == (ret = zbx_tcp_send(&s, request)))
         {
-                tls_arg1 = NULL;
-                tls_arg2 = NULL;
-        }
-        else if (ZBX_TCP_SEC_TLS_CERT == configured_tls_connect_mode)
-        {
-                tls_arg1 = CONFIG_TLS_SERVER_CERT_ISSUER;
-                tls_arg2 = CONFIG_TLS_SERVER_CERT_SUBJECT;
-        }
-        else    /* ZBX_TCP_SEC_TLS_PSK */
-        {
-                tls_arg1 = CONFIG_TLS_PSK_IDENTITY;
-                tls_arg2 = NULL;                /* in case of TLS with PSK zbx_tls_connect() will find PSK */
-        }
-
-        if (SUCCEED == (ret = zbx_tcp_connect(&s, source_ip, host, port, GET_SENDER_TIMEOUT,
-                        configured_tls_connect_mode, tls_arg1, tls_arg2)))
-        {
-                request = zbx_dsprintf(NULL, "%s\n", key);
-
-                if (SUCCEED == (ret = zbx_tcp_send(&s, request)))
+            if (0 < (bytes_received = zbx_tcp_recv_ext(&s, ZBX_TCP_READ_UNTIL_CLOSE, 0)))
+            {
+                if (0 != strcmp(s.buffer, ZBX_NOTSUPPORTED) || sizeof(ZBX_NOTSUPPORTED) >= s.read_bytes)
                 {
-                        if (0 < (bytes_received = zbx_tcp_recv_ext(&s, ZBX_TCP_READ_UNTIL_CLOSE, 0)))
-                        {
-                                if (0 != strcmp(s.buffer, ZBX_NOTSUPPORTED) || sizeof(ZBX_NOTSUPPORTED) >= s.read_bytes)
-                                {
-                                        zbx_rtrim(s.buffer, "\r\n");
-                                        *value = strdup(s.buffer);
-                                }
-
-                        }
+                    zbx_rtrim(s.buffer, "\r\n");
+                    *value = strdup(s.buffer);
                 }
 
-                zbx_free(request);
-
-                zbx_tcp_close(&s);
-
+            }
         }
 
-        return ret;
+        zbx_free(request);
+        zbx_tcp_close(&s);
+    }
+
+    return ret;
 }
 
 /******************************************************************************
@@ -368,9 +327,9 @@ int    zbx_module_vmbix(AGENT_REQUEST *request, AGENT_RESULT *result)
       zabbix_log(LOG_LEVEL_DEBUG, "Received reply from VmBix. Query: %s, result: %s", strdup(key), strdup(value));
       SET_STR_RESULT(result, strdup(value));
     }
-    zbx_free(value);
   }
 
+  zbx_free(value);
   zbx_free(host);
   zbx_free(key);
   zbx_free(source_ip);

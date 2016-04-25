@@ -105,8 +105,8 @@ static void	zbx_module_load_config()
 	static struct cfg_line cfg[] =
 	{
     {"VmBixModuleTimeout",	&CONFIG_MODULE_TIMEOUT,	TYPE_INT,	PARM_OPT,	1,	600},
-		{"VmBixPort",	&CONFIG_VMBIX_PORT,	TYPE_INT,	PARM_OPT,	1,	65535},
-		{"VmBixHost",	&CONFIG_VMBIX_HOST,	TYPE_STRING,	PARM_OPT,	0,	0},
+    {"VmBixPort",	&CONFIG_VMBIX_PORT,	TYPE_INT,	PARM_OPT,	1,	65535},
+    {"VmBixHost",	&CONFIG_VMBIX_HOST,	TYPE_STRING,	PARM_OPT,	0,	0},
     { NULL },
 	};
 
@@ -330,9 +330,9 @@ int    zbx_module_vmbix(AGENT_REQUEST *request, AGENT_RESULT *result)
       zabbix_log(LOG_LEVEL_DEBUG, "Received reply from VmBix. Query: %s, result: %s", strdup(key), strdup(value));
       SET_STR_RESULT(result, strdup(value));
     }
-    zbx_free(value);
   }
 
+  zbx_free(value);
   zbx_free(host);
   zbx_free(key);
   zbx_free(source_ip);
@@ -342,7 +342,7 @@ int    zbx_module_vmbix(AGENT_REQUEST *request, AGENT_RESULT *result)
 
 /*****************************************************************************
 *                                                                            *
-* Function: zbx_module_vmbix_echo                                            *
+* Function: zbx_module_vmbix_ping                                            *
 *                                                                            *
 * Purpose: echoes back the first parameter                                   *
 *                                                                            *
