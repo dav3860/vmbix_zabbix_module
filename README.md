@@ -3,7 +3,7 @@ zbx_vmbix
 
 Description
 -----------
-Zabbix 2.2 comes with support of loadable modules for extending Zabbix agent and server without sacrificing performance.
+Zabbix 2.2+ comes with support of loadable modules for extending Zabbix agent and server without sacrificing performance.
 
 A loadable module is basically a shared library used by Zabbix server or agent and loaded on startup. The library should contain certain functions, so that a Zabbix process may detect that the file is indeed a module it can load and work with.
 
@@ -14,7 +14,7 @@ Install
 
 From **source**:
 
-You need to download the Zabbix source (2.2 or 2.4) configure the environment :
+You need to download the Zabbix source and configure the environment :
 
 ```
 cd <source_zabbix>
@@ -31,11 +31,6 @@ cd vmbix_zabbix_module
 
 After that, compile the module :
 
-### For Zabbix 2.2 :
-```
-make vmbix-2.2
-```
-
 ### For Zabbix 2.4 :
 ```
 make vmbix-2.4
@@ -51,11 +46,11 @@ This will create the vmbix.so file. Put it into a /usr/lib/zabbix/modules direct
 Configure
 ---------
 
-**For an agent :** `cd /etc/zabbix/zabbix_agentd.conf`
+**For an agent :** `/etc/zabbix/zabbix_agentd.conf`
 
-**For a server :** `cd /etc/zabbix/zabbix_server.conf`
+**For a server :** `/etc/zabbix/zabbix_server.conf`
 
-**For a proxy :** `cd /etc/zabbix/zabbix_proxy.conf`
+**For a proxy :** `/etc/zabbix/zabbix_proxy.conf`
 
 ```
 LoadModulePath=/usr/lib/zabbix/modules
