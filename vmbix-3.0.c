@@ -324,12 +324,12 @@ int    zbx_module_vmbix(AGENT_REQUEST *request, AGENT_RESULT *result)
     ret = get_value(source_ip, CONFIG_VMBIX_HOST, CONFIG_VMBIX_PORT, key, &value);
 
     if (SUCCEED == ret && value != NULL) {
-      zabbix_log(LOG_LEVEL_DEBUG, "Received reply from VmBix. Query: %s, result: %s", strdup(key), strdup(value));
+      // zabbix_log(LOG_LEVEL_DEBUG, "Received reply from VmBix. Query: %s, result: %s", strdup(key), strdup(value));
       SET_STR_RESULT(result, strdup(value));
     }
+    zbx_free(value);
   }
 
-  zbx_free(value);
   zbx_free(host);
   zbx_free(key);
   zbx_free(source_ip);
