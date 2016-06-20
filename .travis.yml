@@ -22,7 +22,7 @@ install:
 - mkdir -p ${DEPLOY_ROOT}/usr/lib/zabbix/modules
 - mkdir -p ${DEPLOY_ROOT}/etc/zabbix/
 - gem install fpm
-- if [ "$ZABBIX_VERSION" == "3.0" ]; then export VERSION="3.0.3"; fi
+- if [ "$ZABBIX_VERSION" == "3.0" ]; then export VERSION="3.0.1"; fi
 - if [ "$ZABBIX_VERSION" == "2.4" ]; then export VERSION="2.4.7"; fi
 - mkdir -p $TRAVIS_BUILD_DIR/zabbix-${VERSION}/src/modules/vmbix_zabbix_module/
 - rsync -a $TRAVIS_BUILD_DIR/ $TRAVIS_BUILD_DIR/zabbix-${VERSION}/src/modules/vmbix_zabbix_module/
