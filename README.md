@@ -75,4 +75,4 @@ vmbix[vm.guest.os,VM01]                  [s|Red Hat Enterprise Linux 6 (64 b
 ```
 
 ## Zabbix Templates
-Sample templates using this loadable module will soon be provided in the [VmBix repository](https://github.com/dav3860/vmbix/tree/master/src/zabbix_templates).
+Sample templates using this loadable module are provided in the [VmBix repository](https://github.com/dav3860/vmbix/tree/master/zabbix_templates).
