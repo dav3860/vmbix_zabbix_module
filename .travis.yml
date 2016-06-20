@@ -37,7 +37,7 @@ install:
 - tar -zxf $TRAVIS_BUILD_DIR/zabbix-${VERSION}.tar.gz
 script:
 - cd $TRAVIS_BUILD_DIR/zabbix-${VERSION}
-- ./configure
+- ./configure --with-openssl
 - cd $TRAVIS_BUILD_DIR/zabbix-${VERSION}/src/modules/vmbix_zabbix_module
 - make vmbix-${ZABBIX_VERSION}
 - cp vmbix.so ${DEPLOY_ROOT}/usr/lib/zabbix/modules
