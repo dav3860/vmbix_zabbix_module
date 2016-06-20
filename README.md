@@ -1,26 +1,33 @@
-zbx_vmbix
-=====================
+# Zabbix VmBix Module ![alt text](https://travis-ci.org/dav3860/vmbix_zabbix_module.svg?branch=master "Build Status")
 
-Description
------------
+## Description
 Zabbix 2.2+ comes with support of loadable modules for extending Zabbix agent and server without sacrificing performance.
 
 A loadable module is basically a shared library used by Zabbix server or agent and loaded on startup. The library should contain certain functions, so that a Zabbix process may detect that the file is indeed a module it can load and work with.
 
 I have created a module to query the [VmBix](https://github.com/dav3860/vmbix) daemon, used to monitor a VMWare infrastructure with Zabbix.
 
-Install
--------
+## Install
+Get the latest version [here](https://bintray.com/dav3860/generic/vmbix-zabbix-module/view#files)
+By default, the packages will create a /etc/zabbix/zabbix_agentd.d/modules.conf file to enable the module. Configure it for the server or the proxy if needed (see the Configure section).
 
-From **source**:
-
+## Or build from source
 You need to download the Zabbix source and configure the environment :
 
 ```
 cd <source_zabbix>
+```
+For Zabbix 2.4.x :
+```
 ./configure
-
-cd <source_zabbix>/src/modules/ 
+```
+For Zabbix 3.0.x :
+```
+./configure --with-openssl
+```
+Then :
+```
+cd <source_zabbix>/src/modules/
 ```
 
 And you should create a new directory with this git repo content :
@@ -43,8 +50,7 @@ make vmbix-3.0
 
 This will create the vmbix.so file. Put it into a /usr/lib/zabbix/modules directory for example.
 
-Configure
----------
+## Configure
 
 **For an agent :** `/etc/zabbix/zabbix_agentd.conf`
 
@@ -68,7 +74,5 @@ You can test it like this with a Zabbix agent for example :
 vmbix[vm.guest.os,VM01]                  [s|Red Hat Enterprise Linux 6 (64 bits)]
 ```
 
-Zabbix 2.x templates
----------------------
-
-Sample templates using this loadable module are provided in the [VmBix repository](https://github.com/dav3860/vmbix/tree/master/src/zabbix_templates).
+## Zabbix Templates
+Sample templates using this loadable module will soon be provided in the [VmBix repository](https://github.com/dav3860/vmbix/tree/master/src/zabbix_templates).
