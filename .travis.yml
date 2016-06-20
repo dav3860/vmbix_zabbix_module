@@ -1,52 +1,53 @@
 sudo: false
 language: cpp
 os:
-  - linux  
+- linux
 env:
   global:
-    - PROJECT_NAME=vmbix-zabbix-module
-    - DEPLOY_ROOT=$TRAVIS_BUILD_DIR/deploy-root
-    - secure: "knVkv3JZlKUmONTfUHLY/lfvjjdWlKH5N5lpANwescjujoPczy6CzikA8Js2Tdp3NH7tPrvhqDRf1cTCLRm9yaNnlRgh1n6cVizR+CRQHZ0EnUaA9ovOOaQlPc7+9fBSRi3Eenmv66ZVkMaej7Alrqr3i0AC/y84WBr1if7uKy012yfKfHkZa7WTVoeY8ZsYc2Nvk6rQRP6hXWcbbiwHwi0UO2yRGX+gtthGakWPFlqq3DJQgbqNzFZOMuCYjnistKCvHEEqHT0jIirx4eroBxn+xJRI5uRwoD1jDaAYlxoaqaOfdUYbo9zeCyrC+VRShg6XlLKhPQ84CE6KrJZgVx0h8jtH31wNre/pg6PFLuC2q4QSlPe2PXZEbzoKRaQlP9zf+V7AwDkTWGKD4I+tO1r8iBV+PLXr29n1MTQBTn9fhwnkehis7s636NizlcdGamfz/7NCeacF/2HilFJXMRvpMVYxalloOppL8XhBKI1bWPyhdVOurk2gmbwRHW85vZFVDUhuw+LRd0mG8RqxLz1EFfOgLon/9S3HiX1f6GuyD34c2vQ3+wulwuf6hBJvfjHEtx/v86fNQWKrJ8VCh+9eFLp8lsvJnhSLTIpZlkrgNA1Zmyton4hBW6iNVV8N6QWxAtZ7CHa8s2yEvOep36h30h52kXOqYU9vCuglnIs="
-  matrix:    
-      - ZABBIX_VERSION=3.0 TARGET_PLATFORM=deb
-      - ZABBIX_VERSION=2.4 TARGET_PLATFORM=deb
-      - ZABBIX_VERSION=3.0 TARGET_PLATFORM=rpm
-      - ZABBIX_VERSION=2.4 TARGET_PLATFORM=rpm
-
+  - PROJECT_NAME=vmbix-zabbix-module
+  - DEPLOY_ROOT=$TRAVIS_BUILD_DIR/deploy-root
+  - secure: me2YFbvkboPyNKG0KVsdvq8BWgAKmWqPAcCtwyQ9Jgi+qtAIsTUJnyOzFHmFbsp0xal7kgtwrYrzW19ve7K5+3vVE0JlKIHfCxH13D5TEBaCJgDuCQz7hJEfq6NX2d5EFZF54J8vfjWAymGmmPPY5OlarftbKAPaObLGeKyUPtKMc5ZyENISwZoqeblcdKSjy9WrLeLQzH66MYEkptXmKBdVvaCMfN/mYGVImgxnKOXmu7y5JfeE+Pl9Iudw2GvlsH6B/N8rNj2A5dv0Uf6tVciCSHA0KrvfSR7p/8w2JobMUDh5/ekp1w3fL5Qo4b/7WOIbeTW9XIp72ohTGC/qvbRfUhWuEDjaOvpRDkoKtsXEpSIVxtPYyu0BWYOL0ZeOGrUhsZjIY9Kc1spEn1+wOA0CDVl6hSEFOOShI68IsJnZdQd9BdCNLaU4YgB6kHNotjzzX0IR10ipaCdpiUaYbQIjjfHPnOc1OEixuIt+/iq5jjVqPOXdz196OS4gUJJTDPV1YS9Vo7+qjNwOM7Ezj+9+yOy1msoOudskTNcHs9t8a4+YMit3dWOOOyn6BjUk9ZxP5oGk48WszkxpMnZQQNy8PoxWkN9Z90SFchJCUORZsOAGJe8lFeFSViEh8d6HYsF8g8AJlG0WZ+7Wn/d+SuW7jsu1gNr2j4Etk6Jbts4=
+  matrix:
+  - ZABBIX_VERSION=3.0 TARGET_PLATFORM=deb
+  - ZABBIX_VERSION=2.4 TARGET_PLATFORM=deb
+  - ZABBIX_VERSION=3.0 TARGET_PLATFORM=rpm
+  - ZABBIX_VERSION=2.4 TARGET_PLATFORM=rpm
 addons:
   apt:
     packages:
-      - rpm
+    - rpm
     sources:
-      - ubuntu-toolchain-r-test
-install:  
-  - mkdir -p ${DEPLOY_ROOT}/usr/lib/zabbix/modules
-  - mkdir -p ${DEPLOY_ROOT}/etc/zabbix/
-  - gem install fpm
-  - if [ "$ZABBIX_VERSION" == "3.0" ]; then export VERSION="3.0.3"; fi
-  - if [ "$ZABBIX_VERSION" == "2.4" ]; then export VERSION="2.4.7"; fi
-  - mkdir -p $TRAVIS_BUILD_DIR/zabbix-${VERSION}/src/modules/vmbix_zabbix_module/
-  - rsync -a $TRAVIS_BUILD_DIR/ $TRAVIS_BUILD_DIR/zabbix-${VERSION}/src/modules/vmbix_zabbix_module/
-  - rsync -a $TRAVIS_BUILD_DIR/etc/ ${DEPLOY_ROOT}/etc/
-  - export TAR_FILE_NAME=${PROJECT_NAME}-${VERSION}.tar.gz
-  - if [ "$TARGET_PLATFORM" == "deb" ]; then export FILE_NAME="${PROJECT_NAME}_${VERSION}-1_amd64"; fi
-  - if [ "$TARGET_PLATFORM" == "rpm" ]; then export FILE_NAME="${PROJECT_NAME}-${VERSION}-1.x86_64"; fi
-  - wget https://sourceforge.net/projects/zabbix/files/ZABBIX%20Latest%20Stable/${VERSION}/zabbix-${VERSION}.tar.gz/download -O $TRAVIS_BUILD_DIR/zabbix-${VERSION}.tar.gz
-  - tar -zxf $TRAVIS_BUILD_DIR/zabbix-${VERSION}.tar.gz
-
+    - ubuntu-toolchain-r-test
+install:
+- mkdir -p ${DEPLOY_ROOT}/usr/lib/zabbix/modules
+- mkdir -p ${DEPLOY_ROOT}/etc/zabbix/
+- gem install fpm
+- if [ "$ZABBIX_VERSION" == "3.0" ]; then export VERSION="3.0.3"; fi
+- if [ "$ZABBIX_VERSION" == "2.4" ]; then export VERSION="2.4.7"; fi
+- mkdir -p $TRAVIS_BUILD_DIR/zabbix-${VERSION}/src/modules/vmbix_zabbix_module/
+- rsync -a $TRAVIS_BUILD_DIR/ $TRAVIS_BUILD_DIR/zabbix-${VERSION}/src/modules/vmbix_zabbix_module/
+- rsync -a $TRAVIS_BUILD_DIR/etc/ ${DEPLOY_ROOT}/etc/
+- export TAR_FILE_NAME=${PROJECT_NAME}-${VERSION}.tar.gz
+- if [ "$TARGET_PLATFORM" == "deb" ]; then export FILE_NAME="${PROJECT_NAME}_${VERSION}-1_amd64";
+  fi
+- if [ "$TARGET_PLATFORM" == "rpm" ]; then export FILE_NAME="${PROJECT_NAME}-${VERSION}-1.x86_64";
+  fi
+- wget https://sourceforge.net/projects/zabbix/files/ZABBIX%20Latest%20Stable/${VERSION}/zabbix-${VERSION}.tar.gz/download
+  -O $TRAVIS_BUILD_DIR/zabbix-${VERSION}.tar.gz
+- tar -zxf $TRAVIS_BUILD_DIR/zabbix-${VERSION}.tar.gz
 script:
-  - cd $TRAVIS_BUILD_DIR/zabbix-${VERSION}
-  - ./configure  
-  - cd $TRAVIS_BUILD_DIR/zabbix-${VERSION}/src/modules/vmbix_zabbix_module
-  - make vmbix-${ZABBIX_VERSION}
-  - cp vmbix.so ${DEPLOY_ROOT}/usr/lib/zabbix/modules
-  - cp vmbix_module.conf ${DEPLOY_ROOT}/etc/zabbix/
-
-  - tar -zcf $TRAVIS_BUILD_DIR/$TAR_FILE_NAME vmbix.so vmbix_module.conf
-  - cd ${DEPLOY_ROOT}/
-  - fpm -p $TRAVIS_BUILD_DIR/${FILE_NAME}.${TARGET_PLATFORM} -s dir -t ${TARGET_PLATFORM} -n ${PROJECT_NAME} -v ${VERSION} --iteration 1 -C ${DEPLOY_ROOT} --description "${PROJECT_NAME} ${VERSION}" usr etc
-   
-
+- cd $TRAVIS_BUILD_DIR/zabbix-${VERSION}
+- ./configure
+- cd $TRAVIS_BUILD_DIR/zabbix-${VERSION}/src/modules/vmbix_zabbix_module
+- make vmbix-${ZABBIX_VERSION}
+- cp vmbix.so ${DEPLOY_ROOT}/usr/lib/zabbix/modules
+- cp vmbix_module.conf ${DEPLOY_ROOT}/etc/zabbix/
+- tar -zcf $TRAVIS_BUILD_DIR/$TAR_FILE_NAME vmbix.so vmbix_module.conf
+- cd ${DEPLOY_ROOT}/
+- fpm -p $TRAVIS_BUILD_DIR/${FILE_NAME}.${TARGET_PLATFORM} -s dir -t ${TARGET_PLATFORM} --config-files etc
+  -n ${PROJECT_NAME} -v ${VERSION} --iteration 1 -C ${DEPLOY_ROOT} --description "${PROJECT_NAME}
+  ${VERSION}" usr etc
 after_success:
-  - curl -T $TRAVIS_BUILD_DIR/${TAR_FILE_NAME} -ukireevco:${BINTRAY_KEY} https://api.bintray.com/content/kireevco/generic/${PROJECT_NAME}/${VERSION}/${TAR_FILE_NAME}
-  - curl -T $TRAVIS_BUILD_DIR/${FILE_NAME}.${TARGET_PLATFORM} -ukireevco:${BINTRAY_KEY} https://api.bintray.com/content/kireevco/${TARGET_PLATFORM}/${PROJECT_NAME}/${VERSION}/${FILE_NAME}.${TARGET_PLATFORM}
+- curl -T $TRAVIS_BUILD_DIR/${TAR_FILE_NAME} -udav3860:${BINTRAY_KEY} https://api.bintray.com/content/dav3860/generic/${PROJECT_NAME}/sources/${VERSION}/${TAR_FILE_NAME}
+- curl -T $TRAVIS_BUILD_DIR/${FILE_NAME}.${TARGET_PLATFORM} -udav3860:${BINTRAY_KEY}
+  https://api.bintray.com/content/dav3860/generic/${PROJECT_NAME}/${TARGET_PLATFORM}/${VERSION}/${FILE_NAME}.${TARGET_PLATFORM}
