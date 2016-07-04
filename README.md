@@ -63,14 +63,38 @@ LoadModulePath=/usr/lib/zabbix/modules
 LoadModule=vmbix.so
 ```
 
-And restart the agent or server.
+By default, the packages will create a /etc/zabbix/zabbix_agentd.d/modules.conf file with parameters above.
+
+And restart the agent or server/proxy.
 
 By default, the module will query VmBix on localhost and port 12050. You can create a configuration file /etc/zabbix/vmbix_module.conf if you want to change this. A sample configuration file is provided.
 
-You can test it like this with a Zabbix agent for example :
+You can test it like this for example if you configured a Zabbix agent to load the module :
 
 ```
+[TEST zbx_vmbix]# zabbix_agentd -t vmbix[version]
+2.3.0.59
 [TEST zbx_vmbix]# zabbix_agentd -t vmbix[vm.guest.os,VM01]
+vmbix[vm.guest.os,VM01]                  [s|Red Hat Enterprise Linux 6 (64 bits)]
+```
+
+Or if VmBix is configured to use the UUID to reference the objects (useuuid parameter) :
+
+```
+[TEST zbx_vmbix]# zabbix_agentd -t "vmbix[vm.discovery,*]"
+{
+  "data": [
+    {
+      "{#VIRTUALMACHINE}": "VM01",
+      "{#UUID}": "4214811c-1bab-f0fb-363b-9698a2dc607c"
+    },
+    {
+      "{#VIRTUALMACHINE}": "VM01",
+      "{#UUID}": "4214c939-18f1-2cd5-928a-67d83bc2f503"
+    }
+  ]
+}
+[TEST zbx_vmbix]# zabbix_agentd -t vmbix[vm.guest.os,4214811c-1bab-f0fb-363b-9698a2dc607c]
 vmbix[vm.guest.os,VM01]                  [s|Red Hat Enterprise Linux 6 (64 bits)]
 ```
 
