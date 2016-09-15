@@ -32,7 +32,7 @@ install:
 - mkdir -p $TRAVIS_BUILD_DIR/zabbix-${VERSION}/src/modules/vmbix_zabbix_module/
 - rsync -a $TRAVIS_BUILD_DIR/ $TRAVIS_BUILD_DIR/zabbix-${VERSION}/src/modules/vmbix_zabbix_module/
 - rsync -a $TRAVIS_BUILD_DIR/etc/ ${DEPLOY_ROOT}/etc/
-- export FILE_VERSION=${FULL_VERSION}-zabbix${ZABBIX_VERSION}
+- export FILE_VERSION=${FULL_VERSION}-zabbix-${ZABBIX_VERSION}
 - export TAR_FILE_NAME=${PROJECT_NAME}-${FILE_VERSION}.tar.gz
 - if [ "$TARGET_PLATFORM" == "deb" ]; then export FILE_NAME="${PROJECT_NAME}_${FILE_VERSION}-1_amd64";
   fi
@@ -54,6 +54,6 @@ script:
   -n ${PROJECT_NAME} -v ${FULL_VERSION} --iteration 1 -C ${DEPLOY_ROOT} --description "${PROJECT_NAME}
   ${FULL_VERSION}" usr etc
 after_success:
-- curl -T $TRAVIS_BUILD_DIR/${TAR_FILE_NAME} -udav3860:${BINTRAY_KEY} https://api.bintray.com/content/dav3860/generic/${PROJECT_NAME}/sources/${FULL_VERSION}/${TAR_FILE_NAME}
+- curl -T $TRAVIS_BUILD_DIR/${TAR_FILE_NAME} -udav3860:${BINTRAY_KEY} https://api.bintray.com/content/dav3860/generic/${PROJECT_NAME}/sources/${FULL_VERSION}/sources/${TAR_FILE_NAME}
 - curl -T $TRAVIS_BUILD_DIR/${FILE_NAME}.${TARGET_PLATFORM} -udav3860:${BINTRAY_KEY}
-  https://api.bintray.com/content/dav3860/generic/${PROJECT_NAME}/${TARGET_PLATFORM}/${FULL_VERSION}/${FILE_NAME}.${TARGET_PLATFORM}
+  https://api.bintray.com/content/dav3860/generic/${PROJECT_NAME}/${TARGET_PLATFORM}/${FULL_VERSION}/${TARGET_PLATFORM}/${FILE_NAME}.${TARGET_PLATFORM}
