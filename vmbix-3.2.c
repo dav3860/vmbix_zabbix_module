@@ -29,6 +29,7 @@
 #include "sysinc.h"
 #include "module.h"
 
+#define VMBIX_MODULE_VERSION "1.0"
 #define CONFIG_FILE "/etc/zabbix/vmbix_module.conf"
 
 /* the variable keeps timeout setting for item processing */
@@ -60,11 +61,11 @@ static ZBX_METRIC keys[] =
  * Comment:                                                                   *
  *                                                                            *
  ******************************************************************************/
-static void	zbx_module_set_defaults()
+static void zbx_module_set_defaults()
 {
 
-	if (NULL == CONFIG_VMBIX_HOST)
-		CONFIG_VMBIX_HOST = "127.0.0.1";
+  if (NULL == CONFIG_VMBIX_HOST)
+    CONFIG_VMBIX_HOST = "127.0.0.1";
 }
 
 /******************************************************************************
@@ -79,32 +80,32 @@ static void	zbx_module_set_defaults()
  * Comment:                                                                   *
  *                                                                            *
  ******************************************************************************/
-static void	zbx_module_load_config()
+static void zbx_module_load_config()
 {
   zabbix_log(LOG_LEVEL_INFORMATION, "Loading VmBix module configuration file %s", CONFIG_FILE);
-	static struct cfg_line cfg[] =
-	{
+  static struct cfg_line cfg[] =
+  {
     {"VmBixModuleTimeout", &CONFIG_MODULE_TIMEOUT, TYPE_INT,    PARM_OPT, 1, 600},
     {"VmBixPort",          &CONFIG_VMBIX_PORT,     TYPE_INT,    PARM_OPT, 1, 65535},
     {"VmBixHost",          &CONFIG_VMBIX_HOST,     TYPE_STRING, PARM_OPT, 0, 0},
     { NULL },
-	};
+  };
 
-	parse_cfg_file(CONFIG_FILE, cfg, ZBX_CFG_FILE_OPTIONAL, ZBX_CFG_STRICT);
+  parse_cfg_file(CONFIG_FILE, cfg, ZBX_CFG_FILE_OPTIONAL, ZBX_CFG_STRICT);
 }
 
 /******************************************************************************
  *                                                                            *
- * Function: get_value                                                        *
+ * Function: zbx_module_get_value                                             *
  *                                                                            *
- * Purpose: connect to Zabbix agent, receive and print value                  *
+ * Purpose: connect with Zabbix agent protocol, receive and print value       *
  *                                                                            *
  * Parameters: host - server name or IP address                               *
  *             port - port number                                             *
  *             key  - item's key                                              *
  *                                                                            *
  ******************************************************************************/
-static int      get_value(const char *source_ip, const char *host, unsigned short port, const char *key, char **value)
+static int      zbx_module_get_value(const char *source_ip, const char *host, unsigned short port, const char *key, char **value)
 {
     zbx_socket_t    s;
     int             ret;
@@ -198,6 +199,8 @@ ZBX_METRIC    *zbx_module_item_list()
 ******************************************************************************/
 int    zbx_module_init()
 {
+    zabbix_log(LOG_LEVEL_INFORMATION, "VmBix module version %s", VMBIX_MODULE_VERSION);
+
     srand(time(NULL));
 
     zbx_module_load_config();
@@ -302,7 +305,7 @@ int    zbx_module_vmbix(AGENT_REQUEST *request, AGENT_RESULT *result)
 
   if (SUCCEED == ret)
   {
-    ret = get_value(source_ip, CONFIG_VMBIX_HOST, CONFIG_VMBIX_PORT, key, &value);
+    ret = zbx_module_get_value(source_ip, CONFIG_VMBIX_HOST, CONFIG_VMBIX_PORT, key, &value);
 
     if (SUCCEED == ret && value != NULL) {
       // zabbix_log(LOG_LEVEL_DEBUG, "Received reply from VmBix. Query: %s, result: %s", strdup(key), strdup(value));
@@ -332,7 +335,7 @@ int    zbx_module_vmbix_ping(AGENT_REQUEST *request, AGENT_RESULT *result)
   char *param;
 
   if (1 != request->nparam)
-	{
+  {
     SET_MSG_RESULT(result, strdup("Invalid number of key parameters"));
     return (SYSINFO_RET_FAIL);
   }
