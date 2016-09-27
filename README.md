@@ -21,7 +21,7 @@ For Zabbix 2.4.x :
 ```
 ./configure
 ```
-For Zabbix 3.0.x :
+For Zabbix 3+ :
 ```
 ./configure --with-openssl
 ```
@@ -46,6 +46,11 @@ make vmbix-2.4
 ### For Zabbix 3.0 :
 ```
 make vmbix-3.0
+```
+
+### For Zabbix 3.2 :
+```
+make vmbix-3.2
 ```
 
 This will create the vmbix.so file. Put it into a /usr/lib/zabbix/modules directory for example.
