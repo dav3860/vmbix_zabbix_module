@@ -17,10 +17,6 @@ You need to download the Zabbix source and configure the environment :
 ```
 cd <source_zabbix>
 ```
-For Zabbix 2.4.x :
-```
-./configure
-```
 For Zabbix 3+ :
 ```
 ./configure --with-openssl
@@ -38,19 +34,19 @@ cd vmbix_zabbix_module
 
 After that, compile the module :
 
-### For Zabbix 2.4 :
+### For Zabbix 3.4 :
 ```
-make vmbix-2.4
-```
-
-### For Zabbix 3.0 :
-```
-make vmbix-3.0
+make vmbix-3.4
 ```
 
 ### For Zabbix 3.2 :
 ```
 make vmbix-3.2
+```
+
+### For Zabbix 3.0 :
+```
+make vmbix-3.0
 ```
 
 This will create the vmbix.so file. Put it into a /usr/lib/zabbix/modules directory for example.

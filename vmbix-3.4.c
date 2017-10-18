@@ -29,46 +29,28 @@
 #include "sysinc.h"
 #include "module.h"
 
+#define VMBIX_MODULE_VERSION "1.0"
 #define CONFIG_FILE "/etc/zabbix/vmbix_module.conf"
 
-static int	item_timeout = 30;
-static int CONFIG_MODULE_TIMEOUT	= 30;
-static char *CONFIG_VMBIX_HOST = NULL;
-unsigned short CONFIG_VMBIX_PORT = 12050;
+/* the variable keeps timeout setting for item processing */
+static int  item_timeout = 30;
 
-int    zbx_module_vmbix(AGENT_REQUEST *request, AGENT_RESULT *result);
-int    zbx_module_vmbix_ping(AGENT_REQUEST *request, AGENT_RESULT *result);
+/* module SHOULD define internal functions as static and use a naming pattern different from Zabbix internal */
+/* symbols (zbx_*) and loadable module API functions (zbx_module_*) to avoid conflicts                       */
+static int      CONFIG_MODULE_TIMEOUT =                 30;
+static char     *CONFIG_VMBIX_HOST    =                 NULL;
+static unsigned short                 CONFIG_VMBIX_PORT =     12050;
+
+static int    zbx_module_vmbix(AGENT_REQUEST *request, AGENT_RESULT *result);
+static int    zbx_module_vmbix_ping(AGENT_REQUEST *request, AGENT_RESULT *result);
 
 static ZBX_METRIC keys[] =
-/* KEY               FLAG           FUNCTION                TEST PARAMETERS */
+/* KEY          FLAG           FUNCTION               TEST PARAMETERS */
 {
-    {"vmbix",   CF_HAVEPARAMS, zbx_module_vmbix,  NULL},
-    {"vmbix.ping",   CF_HAVEPARAMS, zbx_module_vmbix_ping,  NULL},    
-    {NULL}
+ {"vmbix",      CF_HAVEPARAMS, zbx_module_vmbix,      NULL},
+ {"vmbix.ping", CF_HAVEPARAMS, zbx_module_vmbix_ping, NULL},
+  {NULL}
 };
-
-/******************************************************************************
- *                                                                            *
- * Function: get_signal_handler                                               *
- *                                                                            *
- * Purpose: process signals                                                   *
- *                                                                            *
- * Parameters: sig - signal ID                                                *
- *                                                                            *
- * Return value:                                                              *
- *                                                                            *
- * Author: Alexei Vladishev                                                   *
- *                                                                            *
- * Comments:                                                                  *
- *                                                                            *
- ******************************************************************************/
-static void	get_signal_handler(int sig)
-{
-	if (SIGALRM == sig)
-		zbx_error("Timeout while executing operation");
-
-	exit(FAIL);
-}
 
 /******************************************************************************
  *                                                                            *
@@ -79,11 +61,11 @@ static void	get_signal_handler(int sig)
  * Comment:                                                                   *
  *                                                                            *
  ******************************************************************************/
-static void	zbx_module_set_defaults()
+static void zbx_module_set_defaults()
 {
 
-	if (NULL == CONFIG_VMBIX_HOST) 
-		CONFIG_VMBIX_HOST = "127.0.0.1";
+  if (NULL == CONFIG_VMBIX_HOST)
+    CONFIG_VMBIX_HOST = "127.0.0.1";
 }
 
 /******************************************************************************
@@ -98,68 +80,65 @@ static void	zbx_module_set_defaults()
  * Comment:                                                                   *
  *                                                                            *
  ******************************************************************************/
-static void	zbx_module_load_config()
+static void zbx_module_load_config()
 {
-  zabbix_log(LOG_LEVEL_INFORMATION, "Loading VmBix module configuration file %s",
-	      CONFIG_FILE);
-	static struct cfg_line cfg[] =
-	{
-    {"VmBixModuleTimeout",	&CONFIG_MODULE_TIMEOUT,	TYPE_INT,	PARM_OPT,	1,	600},
-    {"VmBixPort",	&CONFIG_VMBIX_PORT,	TYPE_INT,	PARM_OPT,	1,	65535},
-    {"VmBixHost",	&CONFIG_VMBIX_HOST,	TYPE_STRING,	PARM_OPT,	0,	0},
+  zabbix_log(LOG_LEVEL_INFORMATION, "Loading VmBix module configuration file %s", CONFIG_FILE);
+  static struct cfg_line cfg[] =
+  {
+    {"VmBixModuleTimeout", &CONFIG_MODULE_TIMEOUT, TYPE_INT,    PARM_OPT, 1, 600},
+    {"VmBixPort",          &CONFIG_VMBIX_PORT,     TYPE_INT,    PARM_OPT, 1, 65535},
+    {"VmBixHost",          &CONFIG_VMBIX_HOST,     TYPE_STRING, PARM_OPT, 0, 0},
     { NULL },
-	};
+  };
 
-	parse_cfg_file(CONFIG_FILE, cfg, ZBX_CFG_FILE_OPTIONAL, ZBX_CFG_STRICT);
+  parse_cfg_file(CONFIG_FILE, cfg, ZBX_CFG_FILE_OPTIONAL, ZBX_CFG_STRICT);
 }
 
 /******************************************************************************
  *                                                                            *
- * Function: get_value                                                        *
+ * Function: zbx_module_get_value                                             *
  *                                                                            *
- * Purpose: connect to Zabbix agent and receive value for given key           *
+ * Purpose: connect with Zabbix agent protocol, receive and print value       *
  *                                                                            *
- * Parameters: host   - server name or IP address                             *
- *             port   - port number                                           *
- *             key    - item's key                                            *
- *                                                                            *
- * Return value: SUCCEED - ok, FAIL - otherwise                               *
- *             value  - retrieved value                                       *
- *                                                                            *
- * Author: Eugene Grigorjev                                                   *
- *                                                                            *
- * Comments:                                                                  *
+ * Parameters: host - server name or IP address                               *
+ *             port - port number                                             *
+ *             key  - item's key                                              *
  *                                                                            *
  ******************************************************************************/
-static int	get_value(const char *source_ip, const char *host, unsigned short port, const char *key, char **value)
+static int      zbx_module_get_value(const char *source_ip, const char *host, unsigned short port, const char *key, char **value)
 {
-	zbx_sock_t	s;
-  int		ret;
-    char            request[1024];
+    zbx_socket_t    s;
+    int             ret;
+    ssize_t         bytes_received = -1;
+    char            *request;
 
-	assert(value);
+    assert(value);
 
-	*value = NULL;
+    *value = NULL;
 
-	if (SUCCEED == (ret = zbx_tcp_connect(&s, source_ip, host, port, GET_SENDER_TIMEOUT)))
-	{
-		zbx_snprintf(request, sizeof(request), "%s\n", key);
-		if (SUCCEED == (ret = zbx_tcp_send(&s, request)))
-		{
-      if (SUCCEED == (ret = SUCCEED_OR_FAIL(zbx_tcp_recv_ext(&s, ZBX_TCP_READ_UNTIL_CLOSE, 0))))
-      {
-        if (0 != strcmp(s.buffer, ZBX_NOTSUPPORTED) || sizeof(ZBX_NOTSUPPORTED) >= s.read_bytes)
+    if (SUCCEED == (ret = zbx_tcp_connect(&s, source_ip, host, port, GET_SENDER_TIMEOUT,
+            ZBX_TCP_SEC_UNENCRYPTED, NULL, NULL)))
+    {
+        request = zbx_dsprintf(NULL, "%s\n", key);
+
+        if (SUCCEED == (ret = zbx_tcp_send_raw(&s, request)))
         {
-          zbx_rtrim(s.buffer, "\r\n");
-          *value = strdup(s.buffer);
+            if (0 < (bytes_received = zbx_tcp_recv_ext(&s, ZBX_TCP_READ_UNTIL_CLOSE, 0)))
+            {
+                if (0 != strcmp(s.buffer, ZBX_NOTSUPPORTED) || sizeof(ZBX_NOTSUPPORTED) >= s.read_bytes)
+                {
+                    zbx_rtrim(s.buffer, "\r\n");
+                    *value = strdup(s.buffer);
+                }
+
+            }
         }
-      }
-		}
 
-		zbx_tcp_close(&s);
-	}
+        zbx_free(request);
+        zbx_tcp_close(&s);
+    }
 
-	return ret;
+    return ret;
 }
 
 /******************************************************************************
@@ -174,9 +153,9 @@ static int	get_value(const char *source_ip, const char *host, unsigned short por
 ******************************************************************************/
 int    zbx_module_api_version()
 {
-    return ZBX_MODULE_API_VERSION_ONE;
+    return ZBX_MODULE_API_VERSION;
 }
- 
+
 /******************************************************************************
 *                                                                            *
 * Function: zbx_module_item_timeout                                          *
@@ -220,19 +199,21 @@ ZBX_METRIC    *zbx_module_item_list()
 ******************************************************************************/
 int    zbx_module_init()
 {
+    zabbix_log(LOG_LEVEL_INFORMATION, "VmBix module version %s", VMBIX_MODULE_VERSION);
+
     srand(time(NULL));
 
     zbx_module_load_config();
     zbx_module_set_defaults();
 
-    zabbix_log(LOG_LEVEL_DEBUG, "VmBix Timeout: %d (s)", CONFIG_MODULE_TIMEOUT);
-    zabbix_log(LOG_LEVEL_DEBUG, "VmBix Host: %s", CONFIG_VMBIX_HOST);
-    zabbix_log(LOG_LEVEL_DEBUG, "VmBix Port: %d", CONFIG_VMBIX_PORT);
+    zabbix_log(LOG_LEVEL_DEBUG, "VmBix  Timeout: %d   (s)",               CONFIG_MODULE_TIMEOUT);
+    zabbix_log(LOG_LEVEL_DEBUG, "VmBix  Host:    %s", CONFIG_VMBIX_HOST);
+    zabbix_log(LOG_LEVEL_DEBUG, "VmBix  Port:    %d", CONFIG_VMBIX_PORT);
     zabbix_log(LOG_LEVEL_DEBUG, "Zabbix Version: %s", ZABBIX_VERSION);
 
     return ZBX_MODULE_OK;
 }
- 
+
 /******************************************************************************
 *                                                                            *
 * Function: zbx_module_uninit                                                *
@@ -251,14 +232,14 @@ int    zbx_module_uninit()
 
 /******************************************************************************
  *                                                                            *
- * Function: concat                                                           * 
+ * Function: zbx_module_concat                                                           *
  *                                                                            *
  * Purpose: Concatenate two or more strings                                   *
  *                                                                            *
  * Comment:                                                                   *
  *                                                                            *
  ******************************************************************************/
-char* concat(int count, ...)
+char* zbx_module_concat(int count, ...)
 {
     va_list ap;
     int i;
@@ -312,22 +293,22 @@ int    zbx_module_vmbix(AGENT_REQUEST *request, AGENT_RESULT *result)
 
   // Construct query
   if (request->nparam == 1)
-    key = concat(1, get_rparam(request, 0));
+    key = zbx_module_concat(1, get_rparam(request, 0));
   if (request->nparam == 2)
-    key = concat(4, get_rparam(request, 0), "[", get_rparam(request, 1), "]");
+    key = zbx_module_concat(4, get_rparam(request, 0), "[", get_rparam(request, 1), "]");
   if (request->nparam == 3)
-    key = concat(6, get_rparam(request, 0), "[", get_rparam(request, 1), ",", get_rparam(request, 2), "]");
+    key = zbx_module_concat(6, get_rparam(request, 0), "[", get_rparam(request, 1), ",", get_rparam(request, 2), "]");
   if (request->nparam == 4)
-    key = concat(8, get_rparam(request, 0), "[", get_rparam(request, 1), ",", get_rparam(request, 2), ",", get_rparam(request, 3), "]");
+    key = zbx_module_concat(8, get_rparam(request, 0), "[", get_rparam(request, 1), ",", get_rparam(request, 2), ",", get_rparam(request, 3), "]");
   if (request->nparam == 5)
-    key = concat(10, get_rparam(request, 0), "[", get_rparam(request, 1), ",", get_rparam(request, 2), ",", get_rparam(request, 3), ",", get_rparam(request, 4), "]");
+    key = zbx_module_concat(10, get_rparam(request, 0), "[", get_rparam(request, 1), ",", get_rparam(request, 2), ",", get_rparam(request, 3), ",", get_rparam(request, 4), "]");
 
   if (SUCCEED == ret)
   {
-    ret = get_value(source_ip, CONFIG_VMBIX_HOST, CONFIG_VMBIX_PORT, key, &value);
+    ret = zbx_module_get_value(source_ip, CONFIG_VMBIX_HOST, CONFIG_VMBIX_PORT, key, &value);
 
     if (SUCCEED == ret && value != NULL) {
-//      zabbix_log(LOG_LEVEL_DEBUG, "Received reply from VmBix. Query: %s, result: %s", strdup(key), strdup(value));
+      // zabbix_log(LOG_LEVEL_DEBUG, "Received reply from VmBix. Query: %s, result: %s", strdup(key), strdup(value));
       SET_STR_RESULT(result, strdup(value));
     }
     zbx_free(value);
@@ -351,9 +332,10 @@ int    zbx_module_vmbix(AGENT_REQUEST *request, AGENT_RESULT *result)
 ******************************************************************************/
 int    zbx_module_vmbix_ping(AGENT_REQUEST *request, AGENT_RESULT *result)
 {
-  const char *param;
+  char *param;
 
-  if (request->nparam != 1) {
+  if (1 != request->nparam)
+  {
     SET_MSG_RESULT(result, strdup("Invalid number of key parameters"));
     return (SYSINFO_RET_FAIL);
   }
@@ -364,3 +346,4 @@ int    zbx_module_vmbix_ping(AGENT_REQUEST *request, AGENT_RESULT *result)
 
   return (SYSINFO_RET_OK);
 }
+
