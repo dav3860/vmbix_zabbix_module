@@ -28,17 +28,23 @@
 #include "zbxgetopt.h"
 #include "sysinc.h"
 #include "module.h"
+#include "../../libs/zbxcrypto/tls.h"
 
-#define VMBIX_MODULE_VERSION "1.0"
+#ifndef _WINDOWS
+#	include "zbxnix.h"
+#endif
+
+#define VMBIX_MODULE_VERSION "1.1"
 #define CONFIG_FILE "/etc/zabbix/vmbix_module.conf"
 
 /* the variable keeps timeout setting for item processing */
-static int  item_timeout = 30;
+static int  item_timeout                  = 30;
+unsigned int	configured_tls_connect_mode = ZBX_TCP_SEC_UNENCRYPTED;
 
 /* module SHOULD define internal functions as static and use a naming pattern different from Zabbix internal */
 /* symbols (zbx_*) and loadable module API functions (zbx_module_*) to avoid conflicts                       */
-static int      CONFIG_MODULE_TIMEOUT =                 30;
-static char     *CONFIG_VMBIX_HOST    =                 NULL;
+static int      CONFIG_MODULE_TIMEOUT                   =                 30;
+static char     *CONFIG_VMBIX_HOST                      =                 NULL;
 static unsigned short                 CONFIG_VMBIX_PORT =     12050;
 
 static int    zbx_module_vmbix(AGENT_REQUEST *request, AGENT_RESULT *result);
@@ -112,15 +118,15 @@ static int      zbx_module_get_value(const char *source_ip, const char *host, un
     ssize_t         bytes_received = -1;
     char            *request;
 
-    assert(value);
-
-    *value = NULL;
-
+    // assert(value);
+    
+    // *value = NULL;
+    
     if (SUCCEED == (ret = zbx_tcp_connect(&s, source_ip, host, port, GET_SENDER_TIMEOUT,
-            ZBX_TCP_SEC_UNENCRYPTED, NULL, NULL)))
+            configured_tls_connect_mode, NULL, NULL)))
     {
         request = zbx_dsprintf(NULL, "%s\n", key);
-
+        
         if (SUCCEED == (ret = zbx_tcp_send_raw(&s, request)))
         {
             if (0 < (bytes_received = zbx_tcp_recv_ext(&s, ZBX_TCP_READ_UNTIL_CLOSE, 0)))
@@ -130,10 +136,10 @@ static int      zbx_module_get_value(const char *source_ip, const char *host, un
                     zbx_rtrim(s.buffer, "\r\n");
                     *value = strdup(s.buffer);
                 }
-
+        
             }
         }
-
+        
         zbx_free(request);
         zbx_tcp_close(&s);
     }
@@ -306,11 +312,12 @@ int    zbx_module_vmbix(AGENT_REQUEST *request, AGENT_RESULT *result)
   if (SUCCEED == ret)
   {
     ret = zbx_module_get_value(source_ip, CONFIG_VMBIX_HOST, CONFIG_VMBIX_PORT, key, &value);
-
+    
     if (SUCCEED == ret && value != NULL) {
-      // zabbix_log(LOG_LEVEL_DEBUG, "Received reply from VmBix. Query: %s, result: %s", strdup(key), strdup(value));
+      zabbix_log(LOG_LEVEL_DEBUG, "Received reply from VmBix. Query: %s, result: %s", strdup(key), strdup(value));
       SET_STR_RESULT(result, strdup(value));
     }
+ 
     zbx_free(value);
   }
 
