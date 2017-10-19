@@ -20,6 +20,15 @@ addons:
   apt:
     packages:
     - rpm
+    - libxml2-dev
+    - libmysqlclient-dev
+    - libmysqld-dev
+    - libsnmp-dev
+    - libcurl-dev
+    - snmp
+    - libcurl4-openssl-dev
+    - libssl-dev
+    - libevent-dev    
     sources:
     - ubuntu-toolchain-r-test
 install:
@@ -43,7 +52,19 @@ install:
 - tar -zxf $TRAVIS_BUILD_DIR/zabbix-${VERSION}.tar.gz
 script:
 - cd $TRAVIS_BUILD_DIR/zabbix-${VERSION}
-- ./configure --with-openssl --enable-ipv6
+- ./configure     --enable-dependency-tracking          \
+                  --sysconfdir=/etc/zabbix              \
+                  --enable-proxy                        \
+                  --enable-agent                        \
+                  --with-net-snmp                       \
+                  --with-libcurl                        \
+                  --with-ssh2                           \
+                  --with-libxml2                        \
+                  --with-libevent                       \
+                  --enable-ipv6                         \
+                  --with-libpcre                        \
+                  --with-openssl                        \
+                  --with-mysql
 - cd $TRAVIS_BUILD_DIR/zabbix-${VERSION}/src/modules/vmbix_zabbix_module
 - make vmbix-${ZABBIX_VERSION}
 - cp vmbix.so ${DEPLOY_ROOT}/usr/lib/zabbix/modules
