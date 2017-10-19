@@ -27,7 +27,8 @@ addons:
     - snmp
     - libcurl4-openssl-dev
     - libssl-dev
-    - libevent-dev    
+    - libevent-dev
+    - libssh2-1-dev
     sources:
     - ubuntu-toolchain-r-test
 install:
