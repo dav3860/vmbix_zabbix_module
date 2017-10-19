@@ -51,18 +51,7 @@ install:
 - tar -zxf $TRAVIS_BUILD_DIR/zabbix-${VERSION}.tar.gz
 script:
 - cd $TRAVIS_BUILD_DIR/zabbix-${VERSION}
-- ./configure     --enable-dependency-tracking          \
-                  --enable-proxy                        \
-                  --enable-agent                        \
-                  --with-net-snmp                       \
-                  --with-libcurl                        \
-                  --with-ssh2                           \
-                  --with-libxml2                        \
-                  --with-libevent                       \
-                  --enable-ipv6                         \
-                  --with-libpcre                        \
-                  --with-openssl                        \
-                  --with-mysql
+- ./configure --enable-dependency-tracking --enable-proxy --enable-agent --with-net-snmp --with-libcurl --with-ssh2 --with-libxml2 --with-libevent --enable-ipv6 --with-libpcre --with-openssl --with-mysql    
 - cd $TRAVIS_BUILD_DIR/zabbix-${VERSION}/src/modules/vmbix_zabbix_module
 - make vmbix-${ZABBIX_VERSION}
 - cp vmbix.so ${DEPLOY_ROOT}/usr/lib/zabbix/modules
