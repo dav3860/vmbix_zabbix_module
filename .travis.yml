@@ -24,7 +24,6 @@ addons:
     - libmysqlclient-dev
     - libmysqld-dev
     - libsnmp-dev
-    - libcurl-dev
     - snmp
     - libcurl4-openssl-dev
     - libssl-dev
