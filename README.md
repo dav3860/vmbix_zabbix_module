@@ -23,7 +23,7 @@ For Zabbix 2.4.x :
 ```
 For Zabbix 3+ :
 ```
-./configure --with-openssl
+./configure --with-openssl --enable-ipv6
 ```
 Then :
 ```
