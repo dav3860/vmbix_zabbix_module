@@ -19,7 +19,7 @@ cd <source_zabbix>
 ```
 For Zabbix 3+ :
 ```
-./configure --with-openssl
+./configure --with-openssl --enable-ipv6
 ```
 Then :
 ```
