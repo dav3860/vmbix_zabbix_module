@@ -29,7 +29,7 @@
 #include "sysinc.h"
 #include "module.h"
 
-#define VMBIX_MODULE_VERSION "1.0"
+#define VMBIX_MODULE_VERSION "1.3"
 #define CONFIG_FILE "/etc/zabbix/vmbix_module.conf"
 
 /* the variable keeps timeout setting for item processing */

@@ -34,7 +34,7 @@
 #	include "zbxnix.h"
 #endif
 
-#define VMBIX_MODULE_VERSION "1.2"
+#define VMBIX_MODULE_VERSION "1.3"
 #define VMBIX_HOST "127.0.0.1"
 #define VMBIX_PORT 12050
 #define CONFIG_FILE "/etc/zabbix/vmbix_module.conf"
