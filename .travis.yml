@@ -12,10 +12,10 @@ env:
   matrix:
   - ZABBIX_VERSION=3.4 TARGET_PLATFORM=deb
   - ZABBIX_VERSION=3.2 TARGET_PLATFORM=deb
-  - ZABBIX_VERSION=3.0 TARGET_PLATFORM=deb
+  - ZABBIX_VERSION=4.0 TARGET_PLATFORM=deb
   - ZABBIX_VERSION=3.4 TARGET_PLATFORM=rpm
   - ZABBIX_VERSION=3.2 TARGET_PLATFORM=rpm
-  - ZABBIX_VERSION=3.0 TARGET_PLATFORM=rpm
+  - ZABBIX_VERSION=4.0 TARGET_PLATFORM=rpm
 addons:
   apt:
     packages:
@@ -35,9 +35,9 @@ install:
 - mkdir -p ${DEPLOY_ROOT}/usr/lib/zabbix/modules
 - mkdir -p ${DEPLOY_ROOT}/etc/zabbix/
 - gem install fpm
-- if [ "$ZABBIX_VERSION" == "3.4" ]; then export VERSION="3.2.3"; fi
-- if [ "$ZABBIX_VERSION" == "3.2" ]; then export VERSION="3.2.9"; fi
-- if [ "$ZABBIX_VERSION" == "3.0" ]; then export VERSION="3.0.12"; fi
+- if [ "$ZABBIX_VERSION" == "3.4" ]; then export VERSION="3.4.15"; fi
+- if [ "$ZABBIX_VERSION" == "3.2" ]; then export VERSION="3.2.11"; fi
+- if [ "$ZABBIX_VERSION" == "4.0" ]; then export VERSION="4.0.5"; fi
 - mkdir -p $TRAVIS_BUILD_DIR/zabbix-${VERSION}/src/modules/vmbix_zabbix_module/
 - rsync -a $TRAVIS_BUILD_DIR/ $TRAVIS_BUILD_DIR/zabbix-${VERSION}/src/modules/vmbix_zabbix_module/
 - rsync -a $TRAVIS_BUILD_DIR/etc/ ${DEPLOY_ROOT}/etc/
