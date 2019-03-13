@@ -1,3 +1,6 @@
+1.3
+* Added Zabbix 4.0 support. Removed Zabbix 3.0 support.
+
 1.2
 * Added support for querying multiple instances of VMBix. An optional connection
   string can be added as the first parameter to specify the VMBix instance.
