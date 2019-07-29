@@ -1,3 +1,6 @@
+1.4
+* Added Zabbix 4.2 support. Removed Zabbix 3.2 support.
+
 1.3
 * Added Zabbix 4.0 support. Removed Zabbix 3.0 support.
 

@@ -26,7 +26,10 @@
 #include "cfg.h"
 #include "log.h"
 #include "zbxgetopt.h"
-#include "sysinc.h"
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <stdint.h>
 #include "module.h"
 #include "../../libs/zbxcrypto/tls.h"
 
@@ -34,7 +37,7 @@
 #	include "zbxnix.h"
 #endif
 
-#define VMBIX_MODULE_VERSION "1.3"
+#define VMBIX_MODULE_VERSION "1.4"
 #define VMBIX_HOST "127.0.0.1"
 #define VMBIX_PORT 12050
 #define CONFIG_FILE "/etc/zabbix/vmbix_module.conf"
@@ -72,7 +75,7 @@ static ZBX_METRIC keys[] =
  ******************************************************************************/
 static void zbx_module_load_config()
 {
-  zabbix_log(LOG_LEVEL_INFORMATION, "Loading VmBix module configuration file %s", CONFIG_FILE);
+  printf("Loading VmBix module configuration file %s\n", CONFIG_FILE);
   static struct cfg_line cfg[] =
   {
     {"VmBixModuleTimeout", &CONFIG_MODULE_TIMEOUT, TYPE_INT,    PARM_OPT, 1, 600},   
@@ -189,14 +192,14 @@ ZBX_METRIC    *zbx_module_item_list()
 ******************************************************************************/
 int    zbx_module_init()
 {
-    zabbix_log(LOG_LEVEL_INFORMATION, "VmBix module version %s", VMBIX_MODULE_VERSION);
+    printf("VmBix module version %s\n", VMBIX_MODULE_VERSION);
 
     srand(time(NULL));
 
     zbx_module_load_config();
 
-    zabbix_log(LOG_LEVEL_DEBUG, "VmBix  Timeout: %d (s)",               CONFIG_MODULE_TIMEOUT);   
-    zabbix_log(LOG_LEVEL_DEBUG, "Zabbix Version: %s", ZABBIX_VERSION);
+    printf("VmBix  Timeout: %d (s)\n",               CONFIG_MODULE_TIMEOUT);   
+    printf("Zabbix Version: %s\n", ZABBIX_VERSION);
 
     return ZBX_MODULE_OK;
 }
@@ -314,21 +317,21 @@ int    zbx_module_vmbix(AGENT_REQUEST *request, AGENT_RESULT *result)
     if (request->nparam == 5)
       key = zbx_module_concat(10, get_rparam(request, 0), "[", get_rparam(request, 1), ",", get_rparam(request, 2), ",", get_rparam(request, 3), ",", get_rparam(request, 4), "]"); 
   }
-  zabbix_log(LOG_LEVEL_DEBUG, "Using VmBix host %s:%d", host, port);
+  // printf("Using VmBix host %s:%d\n", host, port);
   
   if (SUCCEED == ret)
   {
     ret = zbx_module_get_value(source_ip, host, port, key, &value);
     
     if (SUCCEED == ret && value != NULL) {
-      zabbix_log(LOG_LEVEL_DEBUG, "Received reply from VmBix. Query: %s, result: %s", strdup(key), strdup(value));
+      // printf("Received reply from VmBix. Query: %s, result: %s\n", strdup(key), strdup(value));
       SET_STR_RESULT(result, strdup(value));
     }
- 
+    
     zbx_free(value);
   }
 
-  zbx_free(conn);
+  //zbx_free(conn);
   zbx_free(key);
   zbx_free(source_ip);
 
