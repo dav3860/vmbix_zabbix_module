@@ -117,13 +117,17 @@ static int      zbx_module_get_value(const char *source_ip, const char *host, un
     if (SUCCEED == (ret = zbx_tcp_send(&s, request)))
     {
       // zbx_tcp_recv_exts only accepts two arguments in zabbix 4.0
-      if (0 < (bytes_received = zbx_tcp_recv_ext(&s, ZBX_TCP_READ_UNTIL_CLOSE)))
+      if (0 < (bytes_received = zbx_tcp_recv_ext(&s, 0)))
       {
-        if (0 != strcmp(s.buffer, ZBX_NOTSUPPORTED) || sizeof(ZBX_NOTSUPPORTED) >= s.read_bytes)
+        if (0 == strcmp(s.buffer, ZBX_NOTSUPPORTED) && sizeof(ZBX_NOTSUPPORTED) < s.read_bytes)
         {
+          zbx_rtrim(s.buffer + sizeof(ZBX_NOTSUPPORTED), "\r\n");
+          *value = strdup(s.buffer + sizeof(ZBX_NOTSUPPORTED));
+          ret = -1;
+        } else {
           zbx_rtrim(s.buffer, "\r\n");
           *value = strdup(s.buffer);
-        }
+        }        
         
       }
     }
@@ -324,9 +328,15 @@ int    zbx_module_vmbix(AGENT_REQUEST *request, AGENT_RESULT *result)
   {
     ret = zbx_module_get_value(source_ip, host, port, key, &value);
     
-    if (SUCCEED == ret && value != NULL) {
-      // printf("Received reply from VmBix. Query: %s, result: %s\n", strdup(key), strdup(value));
-      SET_STR_RESULT(result, strdup(value));
+    // if (SUCCEED == ret && value != NULL) {
+    if (value != NULL) {
+      if (SUCCEED == ret) {
+        // printf("Received reply from VmBix. Query: %s, result: %s\n", strdup(key), strdup(value));
+        SET_STR_RESULT(result, strdup(value));
+      } else {
+        // printf("Received error from VmBix. Query: %s, result: %s\n", strdup(key), strdup(value));
+        SET_MSG_RESULT(result, strdup(value));
+      }
     }
     
     zbx_free(value);
@@ -336,7 +346,11 @@ int    zbx_module_vmbix(AGENT_REQUEST *request, AGENT_RESULT *result)
   zbx_free(key);
   zbx_free(source_ip);
   
-  return  SYSINFO_RET_OK;
+  if (SUCCEED == ret) {
+    return  SYSINFO_RET_OK;
+  } else {
+    return  SYSINFO_RET_FAIL;
+  }
 }
 
 /*****************************************************************************
