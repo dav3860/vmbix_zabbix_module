@@ -1,5 +1,6 @@
 1.4
 * Added Zabbix 4.2 support. Removed Zabbix 3.2 support.
+* Now propagates error messages coming from VMBix
 
 1.3
 * Added Zabbix 4.0 support. Removed Zabbix 3.0 support.
